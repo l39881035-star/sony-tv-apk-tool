@@ -29,6 +29,75 @@
 
 ---
 
+## 快速开始
+
+> **极简版：三步，全程不用装 adb、不用 root、不用 NAS。**
+
+### ① 打开电视的 ADB 网络调试（只做一次）
+
+```
+设置 → 系统 → 关于 → 连点「版本」7 次（开启开发者选项）
+设置 → 系统 → 开发者选项 → 打开「网络调试 / ADB 调试」
+```
+
+### ② 把这个仓库的 `skills` 文件夹放进 WorkBuddy
+
+1. 点本页右上角绿色的 **`Code`** 按钮 → **`Download ZIP`**
+2. 解压，把里面的 **`skills` 文件夹**整个复制到：
+
+```
+C:\Users\<你的用户名>\.workbuddy\skills\
+```
+
+### ③ 说一句话，剩下的交给它
+
+新建会话，说：
+
+> **检查电视上的应用有没有新版并更新**
+
+它会自动跑完「核对版本 → 下载 → 安装 → 校验 → 出报告」。
+
+**全程你只需要做一件事**：第一次连接时电视会弹出 **「允许 USB 调试吗？」** ——
+点 **允许**，勾选 **「一律允许来自这台计算机」**。之后永久免确认。
+
+> 电视 IP 不是默认值时，直接告诉它你电视的 IP 就行（或改
+> `skills/bravia-apk-update/config.json` 里的 `tv_addr`）。
+
+---
+
+### 进阶：想自己控制每一步
+
+```bash
+PY=python
+TV=skills/bravia-apk-update/scripts/tv_adb.py
+
+$PY $TV connect                                  # 连电视（首次会要授权）
+$PY $TV verify                                   # 看各应用当前版本 + ABI
+$PY $TV install ./downloads/xxx.apkm --slim      # 装（自动解包 + 回读校验）
+$PY $TV downgrade ./old/xxx.apkm                 # 回滚到旧版
+$PY $TV shot screen.png                          # 截屏（排障用）
+$PY $TV log com.netflix.ninja 20                 # 按 PID 抓应用日志
+
+# 下载新版（清单格式：[{"name":"...","url":"<...-android-apk-download/"}]
+$PY skills/bravia-apk-update/scripts/am_download.py targets.json ./downloads
+```
+
+**手动配置电视地址**：复制 `config.example.json` 为 `config.json`：
+
+```json
+{
+  "tv_addr": "192.168.1.20:5555"
+}
+```
+
+优先级：`config.json` > 环境变量 `TV_ADDR` > 内置默认值。`config.json` 已被 `.gitignore` 排除。
+
+> **建议把「检测」和「安装」分开**：检测可以全自动（只列出有哪些新版），
+> 安装前保留一次人工确认 —— 万一哪天抓取逻辑失效，你能立刻发现，
+> 而不是某天突然发现电视上的应用莫名其妙变旧了。
+
+---
+
 ## 它是怎么做的
 
 ```mermaid
@@ -271,65 +340,6 @@ adb shell getprop ro.product.cpu.abilist
 
 **不需要**：root、Google Play、NAS、在电视上安装任何 App。
 **前提**：PC 与电视在**同一内网**（能 ping 通即可；内网地址不受代理软件影响）。
-
----
-
-## 快速开始
-
-### 1. 导入 Skill
-
-把本仓库 `skills/` 下的两个目录复制到 WorkBuddy 的 skills 目录：
-
-```text
-%USERPROFILE%\.workbuddy\skills\
-├── bravia-apk-update\      ← 主：下载 + 安装全流程
-└── apk-version-inspect\    ← 辅：纯 Python 读 APK 版本号（无需 aapt）
-```
-
-### 2. 配置电视地址
-
-复制 `skills/bravia-apk-update/config.example.json` 为 `config.json`，改成你电视的地址：
-
-```json
-{
-  "tv_addr": "192.168.1.20:5555"
-}
-```
-
-也可以用环境变量 `TV_ADDR`（优先级：`config.json` > `TV_ADDR` > 脚本内置默认值）。
-`config.json` 已被 `.gitignore` 排除。
-
-### 3. 首次连接电视
-
-```bash
-python skills/bravia-apk-update/scripts/tv_adb.py connect
-```
-
-- 电视上会弹出**「允许 USB 调试吗？」**，点**允许**并勾选**「一律允许来自这台计算机」**。
-- 只需授权一次，之后永久生效。
-- 失败时 `adb devices` 会显示 `unauthorized`，此时照着上面的提示去电视上点一下即可。
-
-### 4. 使用
-
-```bash
-PY=python
-TV=skills/bravia-apk-update/scripts/tv_adb.py
-
-# ① 看电视上各应用的当前版本与 ABI
-$PY $TV verify
-
-# ② 下载新版（清单是 [{"name":"...","url":"<...-android-apk-download/"}）
-$PY skills/bravia-apk-update/scripts/am_download.py targets.json ./downloads
-
-# ③ 装到电视（自动解包 + install-multiple -r + 回读版本）
-$PY $TV install ./downloads/*.apkm --slim
-```
-
-也可以直接交给 WorkBuddy：说一句「**检查电视上的应用有没有新版并更新**」，
-它会自动完成「核对版本 → 下载 → 安装 → 校验 → 出报告」全流程。
-
-> 建议把**检测**和**安装**分开：检测可以全自动（只列出有哪些新版），
-> 安装前保留一次人工确认，避免哪天检测逻辑失效却无人察觉。
 
 ---
 
