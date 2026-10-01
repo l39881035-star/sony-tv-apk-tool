@@ -172,7 +172,19 @@ def _connect_quiet() -> bool:
               "（建议勾选『一律允许来自这台计算机』）后重新运行。\n", file=sys.stderr)
         return False
     out, err = raw("devices")
-    return f"{TV}\tdevice" in out
+    if f"{TV}\tdevice" in out:
+        return True
+    host = TV.split(":")[0]
+    print(
+        f"\n⚠️  连不上 {TV}\n"
+        f"    请依次检查：\n"
+        f"      1) 电视已开机，且和这台电脑在同一局域网 —— 先试试：ping {host}\n"
+        f"      2) 电视已开启「设置 → 系统 → 开发者选项 → 网络调试 / ADB 调试」\n"
+        f"      3) 地址填对了 —— 写在 config.json 的 tv_addr 里，或设环境变量 TV_ADDR\n"
+        f"    当前设备列表：{(out + err).strip().replace(chr(10), ' | ') or '(空)'}\n",
+        file=sys.stderr,
+    )
+    return False
 
 
 # ---------------------------------------------------------------- 子命令
