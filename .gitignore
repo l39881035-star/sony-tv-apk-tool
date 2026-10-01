@@ -1,0 +1,24 @@
+# 本地配置与产物，不要提交
+config.json
+.crprofile/
+downloads/
+_last_profile.txt
+_apkmirror_cookies.txt
+
+# 安装包
+*.apk
+*.apkm
+*.xapk
+*.apks
+
+# 内部文件（发布前删除）
+_PUBLISH_CHECKLIST.md
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+__pycache__/
+*.pyc

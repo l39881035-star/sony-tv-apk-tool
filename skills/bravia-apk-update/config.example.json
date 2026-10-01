@@ -1,0 +1,4 @@
+{
+  "_comment": "复制本文件为 config.json 并改成你自己的值。config.json 已被 .gitignore 排除。",
+  "tv_addr": "192.168.1.20:5555"
+}
